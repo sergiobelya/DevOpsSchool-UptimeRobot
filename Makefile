@@ -1,10 +1,12 @@
 APP=$(shell basename $(shell git remote get-url origin) .git)
+APP_LC = $(shell echo ${APP} | tr A-Z a-z)
 GCLOUD_PROJECT_ID=strange-theme-417619
 REGISTRY=eu.gcr.io/${GCLOUD_PROJECT_ID}
 VERSION=$(shell git describe --tags --abbrev=0)-$(shell git rev-parse --short HEAD)
 
 show-vars:
 	@echo APP: ${APP}
+	@echo APP_LC: ${APP_LC}
 	@echo VERSION: ${VERSION}
 
 get:
@@ -20,8 +22,8 @@ build: format get show-vars
 
 # Build docker image
 image: show-vars
-	@echo TAG: ${REGISTRY}/${APP}:${VERSION}
-	docker build . -t ${REGISTRY}/${APP}:${VERSION}
+	@echo TAG: ${REGISTRY}/${APP_LC}:${VERSION}
+	docker build . -t ${REGISTRY}/${APP_LC}:${VERSION}
 # -----
 
 # Auth on Google Cloud before push
@@ -31,8 +33,8 @@ auth:
 	gcloud auth configure-docker eu.gcr.io
 
 push: show-vars
-	docker push ${REGISTRY}/${APP}:${VERSION}
+	docker push ${REGISTRY}/${APP_LC}:${VERSION}
 
 clean:
 	rm -f src/app
-	docker rmi $(shell docker images ${REGISTRY}/${APP} -q)
+	docker rmi $(shell docker images ${REGISTRY}/${APP_LC} -q)
